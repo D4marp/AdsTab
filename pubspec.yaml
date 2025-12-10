@@ -40,7 +40,7 @@ dependencies:
   cached_network_image: ^3.4.0
   
   # Carousel
-  carousel_slider: ^4.2.1
+  carousel_slider: ^4.0.0
   
   # UI Enhancements
   shimmer: ^3.0.0
