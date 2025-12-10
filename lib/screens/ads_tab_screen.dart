@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/index.dart';
 import '../providers/index.dart';
 import '../widgets/index.dart';
+import 'ad_detail_screen.dart';
 
-/// Halaman utama dengan carousel ads
+/// Modern Ads Tab Screen dengan Full Carousel di atas
 class AdsTabScreen extends StatefulWidget {
   const AdsTabScreen({Key? key}) : super(key: key);
 
@@ -16,7 +17,8 @@ class _AdsTabScreenState extends State<AdsTabScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final Set<String> _favoriteIds = {};
-  bool _isListView = false;
+  String _searchQuery = '';
+  String? _selectedCategory;
 
   @override
   void initState() {
@@ -43,35 +45,17 @@ class _AdsTabScreenState extends State<AdsTabScreen>
       appBar: AppBar(
         title: const Text('Ads & Promotions'),
         elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        centerTitle: false,
         actions: [
-          /// Toggle view mode
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isListView = !_isListView;
-                  });
-                },
-                child: Icon(
-                  _isListView ? Icons.view_agenda : Icons.view_carousel,
-                ),
-              ),
+              child: Icon(Icons.widgets_outlined, color: Colors.grey[600]),
             ),
           ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Trending'),
-            Tab(text: 'Favorites'),
-          ],
-          onTap: (index) {
-            _handleTabChange(index);
-          },
-        ),
       ),
       body: Consumer<AdsProvider>(
         builder: (context, adsProvider, _) {
@@ -95,31 +79,185 @@ class _AdsTabScreenState extends State<AdsTabScreen>
             );
           }
 
-          return TabBarView(
-            controller: _tabController,
+          return Column(
             children: [
-              /// All ads tab
-              _buildAdsView(
-                context,
-                adsProvider.filteredAds,
-                adsProvider,
+              /// Full Height Carousel (Top Section)
+              Expanded(
+                flex: 3,
+                child: Column(
+                  children: [
+                    /// Tab Bar
+                    Container(
+                      color: Colors.white,
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: Theme.of(context).primaryColor,
+                        unselectedLabelColor: Colors.grey,
+                        indicatorColor: Theme.of(context).primaryColor,
+                        indicatorWeight: 3,
+                        tabs: const [
+                          Tab(text: 'All'),
+                          Tab(text: 'Trending'),
+                          Tab(text: 'Favorites'),
+                        ],
+                      ),
+                    ),
+
+                    /// Carousel
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          /// All Ads
+                          _buildCarousel(
+                            adsProvider.filteredAds,
+                            adsProvider,
+                          ),
+
+                          /// Trending Ads
+                          _buildCarousel(
+                            adsProvider.getTrendingAds(),
+                            adsProvider,
+                          ),
+
+                          /// Favorites
+                          _buildCarousel(
+                            adsProvider.filteredAds
+                                .where((ad) => _favoriteIds.contains(ad.id))
+                                .toList(),
+                            adsProvider,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
-              /// Trending ads tab
-              _buildAdsView(
-                context,
-                adsProvider.filteredAds,
-                adsProvider,
-                isTrending: true,
-              ),
+              /// Bottom Section: Categories + Search (Fixed)
+              Container(
+                color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Category Filter
+                    if (adsProvider.getAllCategories().isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Kategori',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 8),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  /// All button
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.only(right: 8),
+                                    child: FilterChip(
+                                      label: const Text('Semua'),
+                                      selected: _selectedCategory == null,
+                                      onSelected: (selected) {
+                                        setState(() {
+                                          _selectedCategory = null;
+                                        });
+                                        adsProvider.resetFilters();
+                                      },
+                                      backgroundColor: Colors.grey[100],
+                                      selectedColor:
+                                          Theme.of(context).primaryColor,
+                                      labelStyle: TextStyle(
+                                        color: _selectedCategory == null
+                                            ? Colors.white
+                                            : Colors.black87,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
 
-              /// Favorites tab
-              _buildAdsView(
-                context,
-                adsProvider.filteredAds
-                    .where((ad) => _favoriteIds.contains(ad.id))
-                    .toList(),
-                adsProvider,
+                                  /// Category chips
+                                  ...adsProvider
+                                      .getAllCategories()
+                                      .map((category) {
+                                    final isSelected =
+                                        _selectedCategory == category;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 8),
+                                      child: FilterChip(
+                                        label: Text(category),
+                                        selected: isSelected,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            _selectedCategory = selected
+                                                ? category
+                                                : null;
+                                          });
+                                          if (selected) {
+                                            adsProvider
+                                                .filterByCategory(category);
+                                          } else {
+                                            adsProvider.resetFilters();
+                                          }
+                                        },
+                                        backgroundColor: Colors.grey[100],
+                                        selectedColor:
+                                            Theme.of(context).primaryColor,
+                                        labelStyle: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Colors.black87,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    /// Search Bar
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                          adsProvider.searchAds(value);
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search ads...',
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                          prefixIcon: Icon(Icons.search,
+                              color: Colors.grey[400]),
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           );
@@ -128,196 +266,55 @@ class _AdsTabScreenState extends State<AdsTabScreen>
     );
   }
 
-  /// Build ads view (carousel or list)
-  Widget _buildAdsView(
-    BuildContext context,
+  /// Build Carousel for each tab
+  Widget _buildCarousel(
     List<Advertisement> ads,
-    AdsProvider adsProvider, {
-    bool isTrending = false,
-  }) {
+    AdsProvider adsProvider,
+  ) {
     if (ads.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.info_outline,
-              size: 48,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text(
-              isTrending
-                  ? 'Tidak ada trending ads'
-                  : 'Tidak ada ads yang tersedia',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 16,
-              ),
+              'Tidak ada ads',
+              style: TextStyle(color: Colors.grey[600]),
             ),
           ],
         ),
       );
     }
 
-    if (_isListView) {
-      return ListView.builder(
-        itemCount: ads.length,
-        itemBuilder: (context, index) {
-          final ad = ads[index];
-          return AdListTile(
-            advertisement: ad,
-            isFavorite: _favoriteIds.contains(ad.id),
-            onTap: () => _navigateToDetail(context, ad),
-            onFavorite: () {
-              setState(() {
-                if (_favoriteIds.contains(ad.id)) {
-                  _favoriteIds.remove(ad.id);
-                } else {
-                  _favoriteIds.add(ad.id);
-                }
-              });
-              context
-                  .read<AnalyticsProvider>()
-                  .trackAdFavorite(ad.id);
-            },
+    return SizedBox.expand(
+      child: AdsCarousel(
+        advertisements: ads,
+        onAdTap: (adId) {
+          final ad = ads.firstWhere((a) => a.id == adId);
+          Navigator.of(context).pushNamed(
+            '/ad-detail',
+            arguments: ad,
           );
         },
-      );
-    } else {
-      return SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            children: [
-              /// Carousel
-              AdsCarousel(
-                advertisements: ads,
-                favoriteIds: _favoriteIds,
-                onAdTap: (adId) {
-                  final ad = adsProvider.getAdById(adId);
-                  if (ad != null) {
-                    _navigateToDetail(context, ad);
-                  }
-                },
-                onFavorite: (adId, isFavorite) {
-                  setState(() {
-                    if (isFavorite) {
-                      _favoriteIds.add(adId);
-                    } else {
-                      _favoriteIds.remove(adId);
-                    }
-                  });
-                  context
-                      .read<AnalyticsProvider>()
-                      .trackAdFavorite(adId);
-                },
-              ),
-
-              const SizedBox(height: 24),
-
-              /// Categories filter
-              _buildCategoryFilter(context, adsProvider),
-
-              const SizedBox(height: 24),
-
-              /// Search bar
-              _buildSearchBar(context, adsProvider),
-            ],
-          ),
-        ),
-      );
-    }
-  }
-
-  /// Build category filter
-  Widget _buildCategoryFilter(BuildContext context, AdsProvider adsProvider) {
-    final categories = adsProvider.getAllCategories();
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Row(
-          children: categories.map((category) {
-            final isSelected = adsProvider.selectedCategory == category;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
-                onTap: () {
-                  if (isSelected) {
-                    adsProvider.resetFilters();
-                  } else {
-                    adsProvider.filterByCategory(category);
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    category,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  /// Build search bar
-  Widget _buildSearchBar(BuildContext context, AdsProvider adsProvider) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: TextField(
-        onChanged: (value) {
-          adsProvider.searchAds(value);
+        onFavorite: (adId, isFavorite) {
+          setState(() {
+            if (isFavorite) {
+              _favoriteIds.add(adId);
+            } else {
+              _favoriteIds.remove(adId);
+            }
+          });
+          context
+              .read<AnalyticsProvider>()
+              .trackAdFavorite(adId);
         },
-        decoration: InputDecoration(
-          hintText: 'Search ads...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        ),
+        favoriteIds: _favoriteIds,
       ),
-    );
-  }
-
-  /// Navigate to detail screen
-  void _navigateToDetail(BuildContext context, Advertisement advertisement) {
-    context.read<AnalyticsProvider>().trackAdView(advertisement.id);
-    Navigator.of(context).pushNamed(
-      '/ad-detail',
-      arguments: advertisement,
     );
   }
 
   void _handleTabChange(int index) {
-    if (index == 1) {
-      // Load trending ads
-      context.read<AdsProvider>().getTrendingAds();
-    } else if (index == 2) {
-      // Filter favorites
-      // Already handled in filteredAds
-    } else {
-      // Reset to all ads
-      context.read<AdsProvider>().resetFilters();
-    }
+    setState(() {});
   }
 }
