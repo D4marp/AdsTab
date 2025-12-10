@@ -21,19 +21,20 @@ class AdCarouselCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: 2,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(24),
           child: Stack(
             children: [
               /// Background Image
@@ -50,7 +51,7 @@ class AdCarouselCard extends StatelessWidget {
                 ),
               ),
 
-              /// Gradient overlay
+              /// Gradient overlay - more pronounced
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -58,6 +59,13 @@ class AdCarouselCard extends StatelessWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
+                      Colors.black.withOpacity(0.1),
+                      Colors.black.withOpacity(0.5),
+                    ],
+                    stops: const [0.0, 0.5, 1.0],
+                  ),
+                ),
+              ),
                       Colors.black.withOpacity(0.7),
                     ],
                   ),
@@ -66,7 +74,7 @@ class AdCarouselCard extends StatelessWidget {
 
               /// Content
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,23 +88,30 @@ class AdCarouselCard extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              /// Discount badge
+                              /// Discount badge - Modern design
                               if (advertisement.discountPercentage != null)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
+                                    horizontal: 14,
+                                    vertical: 8,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.red.shade500,
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
                                   ),
                                   child: Text(
                                     '-${advertisement.discountPercentage}%',
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),
@@ -109,14 +124,20 @@ class AdCarouselCard extends StatelessWidget {
                           onTap: onFavorite,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withOpacity(0.25),
                               shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 8,
+                                ),
+                              ],
                             ),
-                            padding: const EdgeInsets.all(8),
+                            padding: const EdgeInsets.all(10),
                             child: Icon(
                               isFavorite ? Icons.favorite : Icons.favorite_border,
                               color: isFavorite ? Colors.red : Colors.white,
-                              size: 20,
+                              size: 22,
                             ),
                           ),
                         ),
@@ -130,19 +151,33 @@ class AdCarouselCard extends StatelessWidget {
                         /// Vendor name
                         Row(
                           children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundImage: NetworkImage(
-                                advertisement.vendorLogo,
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Colors.white,
+                                backgroundImage: NetworkImage(
+                                  advertisement.vendorLogo,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
                                 advertisement.vendorName,
                                 style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -150,15 +185,15 @@ class AdCarouselCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 12),
 
                         /// Title
                         Text(
                           advertisement.title,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -169,8 +204,9 @@ class AdCarouselCard extends StatelessWidget {
                         Text(
                           advertisement.description,
                           style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

@@ -43,7 +43,14 @@ class _AdsTabScreenState extends State<AdsTabScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ads & Promotions'),
+        title: const Text(
+          'Ads & Promotions',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: Colors.black87,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -51,8 +58,20 @@ class _AdsTabScreenState extends State<AdsTabScreen>
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: Icon(Icons.widgets_outlined, color: Colors.grey[600]),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.grid_view_rounded, 
+                    color: Colors.grey[700],
+                    size: 22,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -86,15 +105,28 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                 flex: 3,
                 child: Column(
                   children: [
-                    /// Tab Bar
+                    /// Tab Bar - Modern Design
                     Container(
                       color: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       child: TabBar(
                         controller: _tabController,
-                        labelColor: Theme.of(context).primaryColor,
-                        unselectedLabelColor: Colors.grey,
-                        indicatorColor: Theme.of(context).primaryColor,
-                        indicatorWeight: 3,
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.grey[600],
+                        indicator: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicatorWeight: 0,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                        unselectedLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
                         tabs: const [
                           Tab(text: 'All'),
                           Tab(text: 'Trending'),
@@ -114,9 +146,9 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                             adsProvider,
                           ),
 
-                          /// Trending Ads
+                          /// Trending Ads (sorted by view count)
                           _buildCarousel(
-                            adsProvider.getTrendingAds(),
+                            _getTrendingAds(adsProvider),
                             adsProvider,
                           ),
 
@@ -137,13 +169,14 @@ class _AdsTabScreenState extends State<AdsTabScreen>
               /// Bottom Section: Categories + Search (Fixed)
               Container(
                 color: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     /// Category Filter
                     if (adsProvider.getAllCategories().isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -151,18 +184,20 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                               'Kategori',
                               style: Theme.of(context)
                                   .textTheme
-                                  .titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w600),
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 children: [
                                   /// All button
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.only(right: 8),
+                                    padding: const EdgeInsets.only(right: 8),
                                     child: FilterChip(
                                       label: const Text('Semua'),
                                       selected: _selectedCategory == null,
@@ -175,11 +210,21 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                                       backgroundColor: Colors.grey[100],
                                       selectedColor:
                                           Theme.of(context).primaryColor,
+                                      side: BorderSide.none,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(20),
+                                      ),
                                       labelStyle: TextStyle(
                                         color: _selectedCategory == null
                                             ? Colors.white
                                             : Colors.black87,
-                                        fontSize: 12,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
@@ -191,16 +236,14 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                                     final isSelected =
                                         _selectedCategory == category;
                                     return Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 8),
+                                      padding: const EdgeInsets.only(right: 8),
                                       child: FilterChip(
                                         label: Text(category),
                                         selected: isSelected,
                                         onSelected: (selected) {
                                           setState(() {
-                                            _selectedCategory = selected
-                                                ? category
-                                                : null;
+                                            _selectedCategory =
+                                                selected ? category : null;
                                           });
                                           if (selected) {
                                             adsProvider
@@ -212,11 +255,21 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                                         backgroundColor: Colors.grey[100],
                                         selectedColor:
                                             Theme.of(context).primaryColor,
+                                        side: BorderSide.none,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 14,
+                                          vertical: 8,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
                                         labelStyle: TextStyle(
                                           color: isSelected
                                               ? Colors.white
                                               : Colors.black87,
-                                          fontSize: 12,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     );
@@ -230,7 +283,7 @@ class _AdsTabScreenState extends State<AdsTabScreen>
 
                     /// Search Bar
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                       child: TextField(
                         onChanged: (value) {
                           setState(() {
@@ -240,14 +293,46 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                         },
                         decoration: InputDecoration(
                           hintText: 'Search ads...',
-                          hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: Icon(Icons.search,
-                              color: Colors.grey[400]),
+                          hintStyle: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            color: Colors.grey[500],
+                            size: 20,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                    adsProvider.searchAds('');
+                                  },
+                                  child: Icon(
+                                    Icons.close,
+                                    color: Colors.grey[400],
+                                    size: 18,
+                                  ),
+                                )
+                              : null,
                           filled: true,
                           fillColor: Colors.grey[100],
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide.none,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                              width: 2,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -316,5 +401,12 @@ class _AdsTabScreenState extends State<AdsTabScreen>
 
   void _handleTabChange(int index) {
     setState(() {});
+  }
+
+  /// Get trending ads sorted by view count
+  List<Advertisement> _getTrendingAds(AdsProvider adsProvider) {
+    final trending = List<Advertisement>.from(adsProvider.filteredAds);
+    trending.sort((a, b) => b.viewCount.compareTo(a.viewCount));
+    return trending;
   }
 }
