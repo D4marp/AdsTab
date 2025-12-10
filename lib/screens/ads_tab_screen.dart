@@ -3,11 +3,10 @@ import 'package:provider/provider.dart';
 import '../models/index.dart';
 import '../providers/index.dart';
 import '../widgets/index.dart';
-import 'ad_detail_screen.dart';
 
 /// Modern Ads Tab Screen dengan Full Carousel di atas
 class AdsTabScreen extends StatefulWidget {
-  const AdsTabScreen({Key? key}) : super(key: key);
+  const AdsTabScreen({super.key});
 
   @override
   State<AdsTabScreen> createState() => _AdsTabScreenState();
@@ -18,7 +17,6 @@ class _AdsTabScreenState extends State<AdsTabScreen>
   late TabController _tabController;
   final Set<String> _favoriteIds = {};
   String _searchQuery = '';
-  String? _selectedCategory;
 
   @override
   void initState() {
@@ -41,34 +39,54 @@ class _AdsTabScreenState extends State<AdsTabScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
-          'Ads & Promotions',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            color: Colors.black87,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Penawaran Terbaik',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Colors.black87,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Jelajahi deals eksklusif terbaru',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
         ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         centerTitle: false,
+        toolbarHeight: 75,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
+            padding: const EdgeInsets.only(right: 12),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {},
                 borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(8),
-                  child: Icon(Icons.grid_view_rounded, 
-                    color: Colors.grey[700],
-                    size: 22,
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: primaryColor,
+                    size: 24,
                   ),
                 ),
               ),
@@ -79,7 +97,26 @@ class _AdsTabScreenState extends State<AdsTabScreen>
       body: Consumer<AdsProvider>(
         builder: (context, adsProvider, _) {
           if (adsProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Loading amazing deals...',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (adsProvider.error != null) {
@@ -87,11 +124,51 @@ class _AdsTabScreenState extends State<AdsTabScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Error: ${adsProvider.error}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: Colors.red[400],
+                          size: 48,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Oops! Something went wrong',
+                          style: TextStyle(
+                            color: Colors.red[900],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${adsProvider.error}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.red[700],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
                     onPressed: () => _loadAds(),
-                    child: const Text('Retry'),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Try Again'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -102,13 +179,13 @@ class _AdsTabScreenState extends State<AdsTabScreen>
             children: [
               /// Full Height Carousel (Top Section)
               Expanded(
-                flex: 3,
+                flex: 2,
                 child: Column(
                   children: [
-                    /// Tab Bar - Modern Design
+              /// Tab Bar - Modern Design
                     Container(
                       color: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                       child: TabBar(
                         controller: _tabController,
                         labelColor: Colors.white,
@@ -119,18 +196,21 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicatorWeight: 0,
+                        splashBorderRadius: BorderRadius.circular(20),
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 16),
                         labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          letterSpacing: 0.3,
                         ),
                         unselectedLabelStyle: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                         tabs: const [
-                          Tab(text: 'All'),
+                          Tab(text: 'Semua'),
                           Tab(text: 'Trending'),
-                          Tab(text: 'Favorites'),
+                          Tab(text: 'Favorit'),
                         ],
                       ),
                     ),
@@ -166,125 +246,26 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                 ),
               ),
 
-              /// Bottom Section: Categories + Search (Fixed)
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    /// Category Filter
-                    if (adsProvider.getAllCategories().isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Kategori',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.black87,
-                                  ),
-                            ),
-                            const SizedBox(height: 10),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  /// All button
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: FilterChip(
-                                      label: const Text('Semua'),
-                                      selected: _selectedCategory == null,
-                                      onSelected: (selected) {
-                                        setState(() {
-                                          _selectedCategory = null;
-                                        });
-                                        adsProvider.resetFilters();
-                                      },
-                                      backgroundColor: Colors.grey[100],
-                                      selectedColor:
-                                          Theme.of(context).primaryColor,
-                                      side: BorderSide.none,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 8,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(20),
-                                      ),
-                                      labelStyle: TextStyle(
-                                        color: _selectedCategory == null
-                                            ? Colors.white
-                                            : Colors.black87,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-
-                                  /// Category chips
-                                  ...adsProvider
-                                      .getAllCategories()
-                                      .map((category) {
-                                    final isSelected =
-                                        _selectedCategory == category;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(right: 8),
-                                      child: FilterChip(
-                                        label: Text(category),
-                                        selected: isSelected,
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            _selectedCategory =
-                                                selected ? category : null;
-                                          });
-                                          if (selected) {
-                                            adsProvider
-                                                .filterByCategory(category);
-                                          } else {
-                                            adsProvider.resetFilters();
-                                          }
-                                        },
-                                        backgroundColor: Colors.grey[100],
-                                        selectedColor:
-                                            Theme.of(context).primaryColor,
-                                        side: BorderSide.none,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 14,
-                                          vertical: 8,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        labelStyle: TextStyle(
-                                          color: isSelected
-                                              ? Colors.white
-                                              : Colors.black87,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+              /// Bottom Section: Search Only (Elegant)
+              Expanded(
+                flex: 1,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, -3),
                       ),
-
-                    /// Search Bar
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                      child: TextField(
+                    ],
+                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      /// Search Bar - Elegant & Modern
+                      TextField(
                         onChanged: (value) {
                           setState(() {
                             _searchQuery = value;
@@ -292,15 +273,16 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                           adsProvider.searchAds(value);
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search ads...',
+                          hintText: 'Cari vendor atau penawaran...',
                           hintStyle: TextStyle(
-                            color: Colors.grey[400],
+                            color: Colors.grey[500],
                             fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                           prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.grey[500],
-                            size: 20,
+                            Icons.search_rounded,
+                            color: Colors.grey[600],
+                            size: 22,
                           ),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? GestureDetector(
@@ -311,9 +293,9 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                                     adsProvider.searchAds('');
                                   },
                                   child: Icon(
-                                    Icons.close,
-                                    color: Colors.grey[400],
-                                    size: 18,
+                                    Icons.clear_rounded,
+                                    color: Colors.grey[500],
+                                    size: 20,
                                   ),
                                 )
                               : null,
@@ -331,17 +313,17 @@ class _AdsTabScreenState extends State<AdsTabScreen>
                             borderRadius: BorderRadius.circular(16),
                             borderSide: BorderSide(
                               color: Theme.of(context).primaryColor,
-                              width: 2,
+                              width: 1.5,
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 12,
+                            vertical: 14,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -409,4 +391,14 @@ class _AdsTabScreenState extends State<AdsTabScreen>
     trending.sort((a, b) => b.viewCount.compareTo(a.viewCount));
     return trending;
   }
+
+  /// Build professional category chip
+  Widget _buildCategoryChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return const SizedBox.shrink();
+  }
 }
+

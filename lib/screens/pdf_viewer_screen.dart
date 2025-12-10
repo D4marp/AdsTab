@@ -31,20 +31,41 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        centerTitle: false,
       ),
+      backgroundColor: Colors.grey[50],
       body: FutureBuilder<File?>(
         future: _pdfFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading PDF...'),
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Memuat dokumen PDF...',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -52,38 +73,89 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 
           if (snapshot.hasError) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  const Text('Error loading PDF'),
-                  const SizedBox(height: 16),
-                  Text(
-                    snapshot.error.toString(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 12),
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                margin: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.red[200]!,
+                    width: 1.5,
                   ),
-                ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red[400],
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Gagal Memuat PDF',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.red[900],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.red[700],
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
 
           if (snapshot.data == null) {
             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.file_present, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text('PDF not available'),
-                  const SizedBox(height: 16),
-                  Text(
-                    'URL: ${widget.pdfUrl}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ],
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                margin: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.file_present,
+                      size: 64,
+                      color: Colors.grey[600],
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'PDF Tidak Tersedia',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Maaf, dokumen PDF tidak bisa dimuat pada saat ini.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -91,47 +163,82 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           final pdfFile = snapshot.data!;
 
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.picture_as_pdf,
-                  size: 96,
-                  color: Colors.red,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'PDF Loaded',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  pdfFile.path,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+            child: Container(
+              padding: const EdgeInsets.all(32),
+              margin: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'File Size: ${(pdfFile.lengthSync() / 1024 / 1024).toStringAsFixed(2)} MB',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Open dengan PDF viewer (pdfrx package)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('PDF viewer implementation coming soon'),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.picture_as_pdf,
+                      size: 80,
+                      color: Colors.red[500],
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    'Dokumen PDF Siap',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '${(pdfFile.lengthSync() / 1024).toStringAsFixed(0)} KB',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Fitur PDF viewer akan segera hadir'),
+                            backgroundColor: Colors.blue[600],
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.open_in_new, size: 22),
+                      label: const Text('Buka PDF Viewer'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[500],
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 2,
                       ),
-                    );
-                  },
-                  icon: const Icon(Icons.open_in_new),
-                  label: const Text('Open PDF Viewer'),
-                ),
-              ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
